@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Untuk Dia — Sayang Confess</title>
+  <style>
+    :root{--bg:#fff5fb;--card:#fff;--accent:#ff6fa8;--accent2:#6fb3ff;--muted:#666}
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#fff8fb 0%, #f0f9ff 100%);font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial}
+    .wrap{width:100%;max-width:700px;padding:22px}
+    .card{background:var(--card);border-radius:20px;padding:24px;box-shadow:0 10px 30px rgba(16,24,40,0.08);text-align:center}
+    h1{margin:6px 0;font-size:26px;color:#222}
+    p.lead{color:var(--muted);margin:0 0 16px}
+    .heart{font-size:56px;margin-bottom:6px;display:inline-block;animation:beat 1s infinite}
+    @keyframes beat{0%{transform:scale(1)}25%{transform:scale(1.08)}50%{transform:scale(1)}75%{transform:scale(1.08)}100%{transform:scale(1)}}
+    form{display:grid;gap:10px;margin-top:12px}
+    input,textarea,select{width:100%;padding:12px;border-radius:12px;border:1px solid #f0e9f2;background:linear-gradient(180deg,#fff,#fff0);font-size:15px}
+    textarea{min-height:110px;resize:vertical}
+    .row{display:flex;gap:10px}
+    .btn{flex:1;padding:12px;border-radius:12px;border:0;font-weight:700;cursor:pointer}
+    .primary{background:linear-gradient(90deg,var(--accent),var(--accent2));color:#fff}
+    .ghost{background:transparent;border:1px solid #eee;color:#333}
+    .preview{margin-top:12px;padding:12px;border-radius:12px;background:linear-gradient(180deg,#fff,#fff0);text-align:left;border:1px dashed #f5dfee;color:#222;white-space:pre-wrap}
+    .small{font-size:13px;color:var(--muted)}
+    .dual{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    @media(max-width:600px){.dual{grid-template-columns:1fr} .heart{font-size:46px}}
+    footer{margin-top:14px;font-size:13px;color:var(--muted)}
+    .tag{display:inline-block;padding:6px 10px;border-radius:999px;background:#fff6fb;border:1px solid #ffe8f2;color:var(--accent);font-weight:700}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card" role="main">
+      <div class="heart">💖</div>
+      <h1>Pesan Spesial</h1>
+      <p class="lead">Kirim pesan manis ke gebetanmu. Kotak di bawah sudah berisi frasa khususmu.</p>
+
+      <form id="form" onsubmit="return false;">
+        <input id="from" type="text" placeholder="Nama kamu (mis. Budi)" />
+        <input id="to" type="text" placeholder="Nama dia (mis. Siti)" />
+        <textarea id="message">from my blue into your white🩵🤍</textarea>
+
+        <div class="row">
+          <button id="show" class="btn primary" type="button">Tampilkan</button>
+          <button id="copy" class="btn ghost" type="button">Salin</button>
+        </div>
+
+        <div style="display:flex;gap:10px;margin-top:8px">
+          <button id="both" class="btn" style="flex:1;background:linear-gradient(90deg,#ffd6ec,#d6f0ff);font-weight:700">Buatkan untuk Berdua</button>
+          <button id="reset" class="btn ghost" type="button">Reset</button>
+        </div>
+
+        <div id="preview" class="preview" hidden></div>
+        <div id="dualPreview" class="preview" hidden></div>
+        <div id="done" class="small" style="display:none">✅ Tersalin ke clipboard</div>
+      </form>
+
+      <footer>Edit pesan, klik "Buatkan untuk Berdua" untuk melihat versi kamu & versi dia. Tekan Salin lalu kirim via chat.</footer>
+    </div>
+  </div>
+
+  <script>
+    const fromEl = document.getElementById('from');
+    const toEl = document.getElementById('to');
+    const msgEl = document.getElementById('message');
+    const showBtn = document.getElementById('show');
+    const copyBtn = document.getElementById('copy');
+    const bothBtn = document.getElementById('both');
+    const resetBtn = document.getElementById('reset');
+    const preview = document.getElementById('preview');
+    const dual = document.getElementById('dualPreview');
+    const done = document.getElementById('done');
+
+    function build(from, to, msg){
+      const header = `Untuk: ${to || 'Kamu'}\n\n`;
+      const footer = `\n\nDengan sayang,\n${from || '(rahasia)'}`;
+      return header + msg + footer;
+    }
+
+    showBtn.addEventListener('click', ()=>{
+      dual.hidden = true; preview.hidden = false;
+      preview.textContent = build(fromEl.value.trim(), toEl.value.trim(), msgEl.value.trim());
+      done.style.display = 'none';
+      preview.scrollIntoView({behavior:'smooth',block:'center'});
+    });
+
+    copyBtn.addEventListener('click', async ()=>{
+      dual.hidden = true; preview.hidden = false;
+      const text = build(fromEl.value.trim(), toEl.value.trim(), msgEl.value.trim());
+      try {
+        await navigator.clipboard.writeText(text);
+        done.style.display = 'block';
+        preview.textContent = text;
+      } catch(e){
+        const ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+        done.style.display = 'block';
+      }
+    });
+
+    bothBtn.addEventListener('click', ()=>{
+      preview.hidden = true; dual.hidden = false;
+      const a = build(fromEl.value.trim() || '(aku)', toEl.value.trim() || 'kamu', msgEl.value.trim());
+      const b = build(toEl.value.trim() || 'dia', fromEl.value.trim() || '(kamu)', msgEl.value.trim());
+      dual.innerHTML = `Dari kamu → dia:\n\n${a}\n\n---\n\nDari dia → kamu:\n\n${b}`;
+      done.style.display = 'none';
+      dual.scrollIntoView({behavior:'smooth',block:'center'});
+    });
+
+    resetBtn.addEventListener('click', ()=>{
+      fromEl.value='';toEl.value='';msgEl.value='from my blue into your white🩵🤍';
+      preview.hidden = true; dual.hidden = true; done.style.display='none';
+    });
+  </script>
+</body>
+</html>
